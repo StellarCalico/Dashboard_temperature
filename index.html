@@ -114,7 +114,7 @@ function safePlot(id, data, layout, config){
 <header>
   <div>
     <div class="brand"><div class="dot"></div><span class="slug">Dashboard · 02 · Perfil térmico & HVAC</span></div>
-    <h1>Calor, humedad y <em>energía</em>.<br>Guayaquil</h1>
+    <h1>Calor, humedad y <em>energía</em>.<br>Guayaquil ·</h1>
     <p class="subtitle">Perfil climático decadal, parámetros ASHRAE de diseño, demanda energética ACS y factores de carga térmica por sector. Base: estación WMO 842030 (SEGU · Aeropuerto GYE) · serie 2014–2024.</p>
   </div>
   <div class="header-meta">
@@ -223,7 +223,7 @@ function safePlot(id, data, layout, config){
     <div class="kpi-card-small"><div class="l">EUI · uso energético por m²</div><div class="vv mono" id="kpi-eui">—</div><div style="color:var(--ink-dim);font-size:11px;margin-top:4px">vivienda tipo 90 m², 3.5 hab</div></div>
     <div class="kpi-card-small warm"><div class="l">SPI · irradiancia productiva</div><div class="vv mono" id="kpi-spi">—</div><div style="color:var(--ink-dim);font-size:11px;margin-top:4px">ψ solar útil para ACS</div></div>
     <div class="kpi-card-small cool"><div class="l">CCI · confort climático</div><div class="vv mono" id="kpi-cci">—</div><div style="color:var(--ink-dim);font-size:11px;margin-top:4px">meses bajo umbral Thom</div></div>
-    <div class="kpi-card-small"><div class="l">ANF ↔ presión · correlación</div><div class="vv mono" id="kpi-anfr">—</div><div style="color:var(--ink-dim);font-size:11px;margin-top:4px">Pearson sector-agregado</div></div>
+    <div class="kpi-card-small" style="border-left-color:var(--geo,#10b981)"><div class="l">Bomba geotérmica · COP típico</div><div class="vv mono" id="kpi-geocop">—</div><div style="color:var(--ink-dim);font-size:11px;margin-top:4px">tropical · ACS 45°C · DOE 2023</div></div>
     <div class="kpi-card-small warm"><div class="l">Payback solar térmico</div><div class="vv mono" id="kpi-pbt">—</div><div style="color:var(--ink-dim);font-size:11px;margin-top:4px">CAPEX 450 USD · tarifa 0.10 USD/kWh</div></div>
   </div>
 </section>
@@ -273,16 +273,19 @@ const PALETTE = {
   cyan:'#22d3ee', blue:'#60a5fa', teal:'#14b8a6'
 };
 
-const layoutBase = {
-  paper_bgcolor:PALETTE.panel, plot_bgcolor:PALETTE.panel,
-  font:{family:'Geist Mono, monospace', size:11, color:PALETTE.ink},
-  margin:{l:50, r:20, t:10, b:40},
-  xaxis:{gridcolor:PALETTE.grid, zeroline:false, tickfont:{size:10,color:PALETTE.dim}, linecolor:PALETTE.border},
-  yaxis:{gridcolor:PALETTE.grid, zeroline:false, tickfont:{size:10,color:PALETTE.dim}, linecolor:PALETTE.border},
-  legend:{font:{size:10,color:PALETTE.dim}, bgcolor:'rgba(0,0,0,0)'},
-  hovermode:'closest',
-  hoverlabel:{bgcolor:PALETTE.panel, bordercolor:PALETTE.border, font:{family:'Geist Mono', color:PALETTE.ink}}
-};
+// Factory — deep clone para evitar mutaciones de Plotly sobre layoutBase compartido
+function baseLayout(){
+  return JSON.parse(JSON.stringify({
+    paper_bgcolor:PALETTE.panel, plot_bgcolor:PALETTE.panel,
+    font:{family:'Geist Mono, monospace', size:11, color:PALETTE.ink},
+    margin:{l:50, r:20, t:20, b:40},
+    xaxis:{gridcolor:PALETTE.grid, zeroline:false, tickfont:{size:10,color:PALETTE.dim}, linecolor:PALETTE.border},
+    yaxis:{gridcolor:PALETTE.grid, zeroline:false, tickfont:{size:10,color:PALETTE.dim}, linecolor:PALETTE.border},
+    legend:{font:{size:10,color:PALETTE.dim}, bgcolor:'rgba(0,0,0,0)'},
+    hovermode:'closest',
+    hoverlabel:{bgcolor:PALETTE.panel, bordercolor:PALETTE.border, font:{family:'Geist Mono', color:PALETTE.ink}}
+  }));
+}
 const cfg = {responsive:true, displayModeBar:false};
 
 document.getElementById('today').textContent = new Date().toLocaleDateString('es-EC',{year:'numeric',month:'short',day:'2-digit'}).toUpperCase();
@@ -321,7 +324,7 @@ safePlot('chart-perfil-mensual',[
   {x:meses, y:t_max, mode:'lines', name:'T máx', line:{color:PALETTE.rose, width:2}, fill:'tonexty', fillcolor:'rgba(244,63,94,0.05)'},
   {x:meses, y:t_media, mode:'lines+markers', name:'T media', line:{color:PALETTE.amber, width:3, shape:'spline'}, marker:{size:8}},
   {x:meses, y:t_min, mode:'lines', name:'T mín', line:{color:PALETTE.cyan, width:2}},
-],{...layoutBase, yaxis:{...layoutBase.yaxis, title:{text:'°C',font:{size:11,color:PALETTE.dim}}, range:[16,36]}, legend:{...layoutBase.legend, orientation:'h', y:1.08}}, cfg);
+],{...baseLayout(), yaxis:{...baseLayout().yaxis, title:{text:'°C',font:{size:11,color:PALETTE.dim}}, range:[16,36]}, legend:{...baseLayout().legend, orientation:'h', y:1.08}}, cfg);
 
 // Tendencia
 safePlot('chart-tendencia',[{
@@ -329,8 +332,8 @@ safePlot('chart-tendencia',[{
   mode:'lines+markers', line:{color:PALETTE.amber, width:3, shape:'spline'},
   marker:{size:9, color:PALETTE.orange, line:{color:PALETTE.bg, width:2}},
   fill:'tozeroy', fillcolor:'rgba(245,158,11,0.08)'
-}],{...layoutBase,
-  yaxis:{...layoutBase.yaxis, title:{text:'°C',font:{size:11,color:PALETTE.dim}}, range:[25,28]},
+}],{...baseLayout(),
+  yaxis:{...baseLayout().yaxis, title:{text:'°C',font:{size:11,color:PALETTE.dim}}, range:[25,28]},
   showlegend:false}, cfg);
 
 // §02 Heatmap
@@ -340,7 +343,7 @@ safePlot('chart-heatmap-temp',[{
   colorscale:[[0,'#1e3a5f'],[0.3,PALETTE.cyan],[0.6,PALETTE.amber],[0.85,PALETTE.orange],[1,PALETTE.crimson]],
   colorbar:{thickness:10, len:0.8, tickfont:{size:10,color:PALETTE.dim}, title:{text:'°C max',font:{size:10,color:PALETTE.dim}}},
   hovertemplate:'Año %{x} · Mes %{y}<br>T max: %{z}°C<extra></extra>'
-}],{...layoutBase, xaxis:{...layoutBase.xaxis, dtick:1}, yaxis:{...layoutBase.yaxis, automargin:true}}, cfg);
+}],{...baseLayout(), xaxis:{...baseLayout().xaxis, dtick:1}, yaxis:{...baseLayout().yaxis, automargin:true}}, cfg);
 
 // §03 UHI
 const sectoresUHI = ['Sur (Trinitaria)','Sur (Guasmo)','Centro (Febres Cordero)','Centro (Urdaneta)','Norte (Sauces)','Norte (Mucho Lote)','Vía a Daule','Vía a la Costa','Samborondón','Durán'];
@@ -350,10 +353,10 @@ safePlot('chart-uhi',[{
   marker:{color: uhiDelta.map(v=>v>2?PALETTE.rose:v>1.5?PALETTE.amber:v>1?PALETTE.orange:PALETTE.cyan),
           line:{color:PALETTE.border, width:1}},
   text: uhiDelta.map(v=>`+${v.toFixed(1)}°C`), textposition:'outside', textfont:{size:11,color:PALETTE.dim}, cliponaxis:false
-}],{...layoutBase,
-  xaxis:{...layoutBase.xaxis, title:{text:'ΔT vs referencia periurbana (°C)',font:{size:11,color:PALETTE.dim}}, range:[0,3.5]},
-  yaxis:{...layoutBase.yaxis, automargin:true},
-  showlegend:false, margin:{...layoutBase.margin, l:180}}, cfg);
+}],{...baseLayout(),
+  xaxis:{...baseLayout().xaxis, title:{text:'ΔT vs referencia periurbana (°C)',font:{size:11,color:PALETTE.dim}}, range:[0,3.5]},
+  yaxis:{...baseLayout().yaxis, automargin:true},
+  showlegend:false, margin:{...baseLayout().margin, l:180}}, cfg);
 
 // THI
 const HR = DATA.temp_mensual.mes.map(m=>DATA.temp_mensual.humedad[mesIdx[m]]);
@@ -364,8 +367,8 @@ safePlot('chart-thi',[
             line:{color:PALETTE.border,width:1}},
     text: THI.map(v=>v.toFixed(1)), textposition:'outside', textfont:{size:10,color:PALETTE.dim}, cliponaxis:false},
   {x:meses, y:Array(12).fill(24), mode:'lines', line:{color:PALETTE.rose, width:1.5, dash:'dot'}, name:'Umbral estrés'}
-],{...layoutBase,
-  yaxis:{...layoutBase.yaxis, title:{text:'THI (°C equiv.)',font:{size:11,color:PALETTE.dim}}, range:[18,30]},
+],{...baseLayout(),
+  yaxis:{...baseLayout().yaxis, title:{text:'THI (°C equiv.)',font:{size:11,color:PALETTE.dim}}, range:[18,30]},
   showlegend:false}, cfg);
 
 // §04 Tabla ASHRAE
@@ -405,16 +408,16 @@ safePlot('chart-energia-mensual',[{
   marker:{color: DATA.energia_mensual.energia.map(v=>v>4?PALETTE.rose:PALETTE.orange),
           line:{color:PALETTE.border, width:1}},
   text: DATA.energia_mensual.energia.map(v=>v.toFixed(2)), textposition:'outside', textfont:{size:10,color:PALETTE.dim}, cliponaxis:false
-}],{...layoutBase,
-  yaxis:{...layoutBase.yaxis, title:{text:'kWh/hab·día',font:{size:11,color:PALETTE.dim}}},
+}],{...baseLayout(),
+  yaxis:{...baseLayout().yaxis, title:{text:'kWh/hab·día',font:{size:11,color:PALETTE.dim}}},
   showlegend:false}, cfg);
 
 safePlot('chart-delta-t',[{
   x: DATA.energia_anual.anio, y: DATA.energia_anual.delta_T,
   mode:'lines+markers', line:{color:PALETTE.crimson, width:3, shape:'spline'},
   marker:{size:9, color:PALETTE.orange, line:{color:PALETTE.bg, width:2}}
-}],{...layoutBase,
-  yaxis:{...layoutBase.yaxis, title:{text:'ΔT (°C)',font:{size:11,color:PALETTE.dim}}, range:[18,23]},
+}],{...baseLayout(),
+  yaxis:{...baseLayout().yaxis, title:{text:'ΔT (°C)',font:{size:11,color:PALETTE.dim}}, range:[18,23]},
   showlegend:false}, cfg);
 
 // KPIs energéticos
@@ -433,10 +436,10 @@ safePlot('chart-cdd',[{
   marker:{color: cddSector.map(v=>v>5700?PALETTE.crimson:v>5500?PALETTE.rose:v>5400?PALETTE.amber:PALETTE.orange),
           line:{color:PALETTE.border, width:1}},
   text: cddSector.map(v=>v.toFixed(0)), textposition:'outside', textfont:{size:10,color:PALETTE.dim}, cliponaxis:false
-}],{...layoutBase,
-  yaxis:{...layoutBase.yaxis, title:{text:'°C·día',font:{size:11,color:PALETTE.dim}}, range:[4800,6100]},
-  xaxis:{...layoutBase.xaxis, tickangle:-30},
-  showlegend:false, margin:{...layoutBase.margin, b:120}}, cfg);
+}],{...baseLayout(),
+  yaxis:{...baseLayout().yaxis, title:{text:'°C·día',font:{size:11,color:PALETTE.dim}}, range:[4800,6100]},
+  xaxis:{...baseLayout().xaxis, tickangle:-30},
+  showlegend:false, margin:{...baseLayout().margin, b:120}}, cfg);
 
 const cargaSector = cddSector.map(c=> 45 + (c-5234)/30);
 safePlot('chart-carga',[{
@@ -444,10 +447,10 @@ safePlot('chart-carga',[{
   marker:{color: cargaSector.map(v=>v>62?PALETTE.crimson:v>55?PALETTE.rose:v>50?PALETTE.amber:PALETTE.orange),
           line:{color:PALETTE.border, width:1}},
   text: cargaSector.map(v=>v.toFixed(0)+' W/m²'), textposition:'outside', textfont:{size:10,color:PALETTE.dim}, cliponaxis:false
-}],{...layoutBase,
-  yaxis:{...layoutBase.yaxis, title:{text:'W/m² (vivienda 90m²)',font:{size:11,color:PALETTE.dim}}, range:[35,80]},
-  xaxis:{...layoutBase.xaxis, tickangle:-30},
-  showlegend:false, margin:{...layoutBase.margin, b:120}}, cfg);
+}],{...baseLayout(),
+  yaxis:{...baseLayout().yaxis, title:{text:'W/m² (vivienda 90m²)',font:{size:11,color:PALETTE.dim}}, range:[35,80]},
+  xaxis:{...baseLayout().xaxis, tickangle:-30},
+  showlegend:false, margin:{...baseLayout().margin, b:120}}, cfg);
 
 // §07 KPIs ingeniería
 const WEI = DATA.kpis.energia_anual_per_cap / (DATA.kpis.consumo_promedio_gye * 365 / 1000);
@@ -457,7 +460,7 @@ document.getElementById('kpi-eui').innerHTML = `${EUI.toFixed(1)} <span class="u
 document.getElementById('kpi-spi').innerHTML = `${(I_annual * eta).toFixed(0)} <span class="u">kWh/m²·año</span>`;
 const CCI = THI.filter(v=>v<=24).length / 12 * 100;
 document.getElementById('kpi-cci').innerHTML = `${CCI.toFixed(0)} <span class="u">%</span>`;
-document.getElementById('kpi-anfr').innerHTML = `-0.71 <span class="u">r</span>`;
+document.getElementById('kpi-geocop').innerHTML = `4.0 <span class="u">kWh_útil/kWh_e</span>`;
 const capexSolar = 450; const tarifaElec = 0.10;
 const ahorro = DATA.kpis.energia_anual_per_cap * tarifaElec * (fsol/100);
 document.getElementById('kpi-pbt').innerHTML = `${(capexSolar/ahorro).toFixed(1)} <span class="u">años</span>`;
